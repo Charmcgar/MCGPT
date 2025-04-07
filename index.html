@@ -276,7 +276,12 @@
       if (keys['s']) newPosition.addScaledVector(direction, -moveSpeed);
       if (keys['a']) newPosition.addScaledVector(right, moveSpeed);
       if (keys['d']) newPosition.addScaledVector(right, -moveSpeed);
-      if (!checkCollision(newPosition)) camera.position.copy(newPosition);
+
+      const feetPosition = newPosition.clone();
+      feetPosition.y -= 0.5; // Adjust for feet position
+      if (!checkCollision(newPosition) && !checkCollision(feetPosition)) {
+        camera.position.copy(newPosition);
+      }
 
       // Jumping
       if (keys[' '] && canJump) {
