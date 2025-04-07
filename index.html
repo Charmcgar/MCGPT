@@ -291,7 +291,15 @@
         canJump = true;
       }
 
-  
+      // Generate new chunks around the player
+      const chunkX = Math.floor(camera.position.x / chunkSize);
+      const chunkZ = Math.floor(camera.position.z / chunkSize);
+      for (let x = -1; x <= 1; x++) {
+        for (let z = -1; z <= 1; z++) {
+          createChunk(chunkX + x, chunkZ + z);
+        }
+      }
+    }
 
     // Animation loop
     function animate() {
