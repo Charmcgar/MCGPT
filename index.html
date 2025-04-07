@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Mine</title>
+  <title>Voxel Grid Building Game</title>
   <style>
     body { margin: 0; overflow: hidden; }
     canvas { display: block; }
@@ -78,7 +78,7 @@
     // Lighting
     scene.add(new THREE.AmbientLight(0x888888)); // Ambient light
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1); // Directional light
-    directionalLight.position.set(10, 20, 10); // Make sure the light is positioned above and slightly in front of the scene
+    directionalLight.position.set(10, 20, 10); // Position the light above and slightly in front of the scene
     scene.add(directionalLight);
 
     // Load textures
@@ -290,7 +290,7 @@
       }
       velocity.y += gravity;
       camera.position.y += velocity.y;
-      if (camera.position.y < 1) {
+      if (camera.position.y < 1) { // Adjust if the player goes below the ground
         camera.position.y = 1;
         velocity.y = 0;
         canJump = true;
