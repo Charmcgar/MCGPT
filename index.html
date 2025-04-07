@@ -93,19 +93,21 @@
 
     function createBlocks() {
       for (let x = 0; x < worldSize; x++) {
-        for (let z = 0; z < worldSize; z++) {
-          const textureIndex = (x + z) % 2; // Alternate between grass and dirt textures
-          const block = new THREE.Mesh(blockGeo, new THREE.MeshLambertMaterial({ map: textures[textureIndex] }));
-          block.position.set(x - worldSize / 2, -1, z - worldSize / 2);
-          block.userData.solid = true;
-          scene.add(block);
-          blocks.push(block);
+        for (let y = 0; y < worldSize; y++) {
+          for (let z = 0; z < worldSize; z++) {
+            const textureIndex = (x + y + z) % 2; // Alternate between grass and dirt textures
+            const block = new THREE.Mesh(blockGeo, new THREE.MeshLambertMaterial({ map: textures[textureIndex] }));
+            block.position.set(x - worldSize / 2, y - worldSize / 2, z - worldSize / 2);
+            block.userData.solid = true;
+            scene.add(block);
+            blocks.push(block);
+          }
         }
       }
     }
 
     // Camera setup
-    camera.position.set(0, 2, 5);
+    camera.position.set(0, 10, 10);
     camera.rotation.order = "YXZ"; // yaw then pitch
 
     // Movement and collision detection
