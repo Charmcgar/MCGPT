@@ -31,7 +31,7 @@
 </head>
 <body>
   <div id="instructions">
-    <p>Use arrow keys to look around (up/down for pitch, left/right for yaw).</p>
+    <p>Use arrow keys to look around.</p>
     <p>WASD to move, Space to jump.</p>
     <p>Left-click to dig, Right-click to place.</p>
     <p>Press 1-3 to choose block type, E to place, Q to break.</p>
@@ -55,12 +55,8 @@
     // Load textures
     const loader = new THREE.TextureLoader();
     const textureUrls = [
-      'https://www.cgbookcase.com/textures/grass/grass-2.jpg', // Custom grass texture
-      'https://www.cgbookcase.com/textures/water/sea-water-2.jpg', // Custom water texture
-      'https://www.cgbookcase.com/textures/dirt/dirt-1.jpg', // Custom dirt texture
-      'https://www.cgbookcase.com/textures/stone/stone-1.jpg', // Custom stone texture
-      'https://www.cgbookcase.com/textures/sand/sand-1.jpg', // Custom sand texture
-      'https://www.cgbookcase.com/textures/wood/wood-2.jpg'  // Custom wood texture
+      'Grass004_1K-JPG_Color.jpg', // Custom grass texture
+      'dirt_2.png'                // Custom dirt texture
     ];
 
     let textures = [];
@@ -98,7 +94,8 @@
     function createBlocks() {
       for (let x = 0; x < worldSize; x++) {
         for (let z = 0; z < worldSize; z++) {
-          const block = new THREE.Mesh(blockGeo, new THREE.MeshLambertMaterial({ map: textures[0] }));
+          const textureIndex = (x + z) % 2; // Alternate between grass and dirt textures
+          const block = new THREE.Mesh(blockGeo, new THREE.MeshLambertMaterial({ map: textures[textureIndex] }));
           block.position.set(x - worldSize / 2, -1, z - worldSize / 2);
           block.userData.solid = true;
           scene.add(block);
@@ -129,11 +126,11 @@
       if (e.key === "ArrowRight") {
         camera.rotation.y -= lookSpeed;
       }
-      if (e.key === "ArrowUp") {
+      if (e.key === "ArrowDown") {
         camera.rotation.x -= lookSpeed;
         camera.rotation.x = Math.max(-Math.PI / 2, camera.rotation.x);
       }
-      if (e.key === "ArrowDown") {
+      if (e.key === "ArrowUp") {
         camera.rotation.x += lookSpeed;
         camera.rotation.x = Math.min(Math.PI / 2, camera.rotation.x);
       }
