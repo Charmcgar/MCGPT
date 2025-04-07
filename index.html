@@ -203,11 +203,17 @@
       return false;
     }
 
-    // Block placement function
+    // Block placement function with grid snapping
     function placeBlock() {
       const direction = new THREE.Vector3();
       camera.getWorldDirection(direction);
       const position = camera.position.clone().add(direction.multiplyScalar(1.5));
+
+      // Snap position to the nearest grid point
+      position.x = Math.round(position.x);
+      position.y = Math.round(position.y);
+      position.z = Math.round(position.z);
+
       const block = new THREE.Mesh(blockGeo, new THREE.MeshLambertMaterial({ map: textures[currentBlockType] }));
       block.position.copy(position);
       block.userData.solid = true;
