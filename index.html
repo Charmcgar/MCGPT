@@ -99,7 +99,7 @@
             textures[index] = texture;
             texturesLoaded++;
             if (texturesLoaded === textureUrls.length) {
-              createBlocks(); // Once textures are loaded, create blocks
+              createInitialChunks(); // Once textures are loaded, create initial chunks
             }
           },
           undefined,
@@ -108,7 +108,7 @@
             textures[index] = new THREE.Texture(); // Empty texture as fallback
             texturesLoaded++;
             if (texturesLoaded === textureUrls.length) {
-              createBlocks();
+              createInitialChunks();
             }
           }
         );
@@ -117,20 +117,33 @@
 
     // Block creation
     const blockGeo = new THREE.BoxGeometry(1, 1, 1);
-    const blocks = [];
-    const worldSize = 16;
+    const blocks = new Map();
+    const chunkSize = 16;
 
-    function createBlocks() {
-      for (let x = 0; x < worldSize; x++) {
-        for (let y = 0; y < worldSize; y++) {
-          for (let z = 0; z < worldSize; z++) {
+    function createChunk(chunkX, chunkZ) {
+      const key = `${chunkX},${chunkZ}`;
+      if (blocks.has(key)) return; // Chunk already exists
+
+      const chunk = [];
+      for (let x = 0; x < chunkSize; x++) {
+        for (let y = 0; y < chunkSize; y++) {
+          for (let z = 0; z < chunkSize; z++) {
             const textureIndex = (x + y + z) % 2; // Alternate between grass and dirt textures
             const block = new THREE.Mesh(blockGeo, new THREE.MeshLambertMaterial({ map: textures[textureIndex] }));
-            block.position.set(x - worldSize / 2, y - worldSize / 2, z - worldSize / 2);
+            block.position.set(chunkX * chunkSize + x, y, chunkZ * chunkSize + z);
             block.userData.solid = true;
             scene.add(block);
-            blocks.push(block);
+            chunk.push(block);
           }
+        }
+      }
+      blocks.set(key, chunk);
+    }
+
+    function createInitialChunks() {
+      for (let x = -1; x <= 1; x++) {
+        for (let z = -1; z <= 1; z++) {
+          createChunk(x, z);
         }
       }
     }
@@ -195,9 +208,11 @@
 
     // Collision detection function
     function checkCollision(position) {
-      for (let block of blocks) {
-        if (block.userData.solid && position.distanceTo(block.position) < 0.6) {
-          return true;
+      for (let chunk of blocks.values()) {
+        for (let block of chunk) {
+          if (block.userData.solid && position.distanceTo(block.position) < 0.6) {
+            return true;
+          }
         }
       }
       return false;
@@ -218,7 +233,14 @@
       block.position.copy(position);
       block.userData.solid = true;
       scene.add(block);
-      blocks.push(block);
+
+      const chunkX = Math.floor(position.x / chunkSize);
+      const chunkZ = Math.floor(position.z / chunkSize);
+      const key = `${chunkX},${chunkZ}`;
+      if (!blocks.has(key)) {
+        blocks.set(key, []);
+      }
+      blocks.get(key).push(block);
     }
 
     // Block digging function
@@ -226,11 +248,17 @@
       const direction = new THREE.Vector3();
       camera.getWorldDirection(direction);
       const raycaster = new THREE.Raycaster(camera.position, direction);
-      const intersects = raycaster.intersectObjects(blocks);
+      const intersects = raycaster.intersectObjects(Array.from(blocks.values()).flat());
       if (intersects.length > 0) {
         const intersected = intersects[0].object;
         scene.remove(intersected);
-        blocks.splice(blocks.indexOf(intersected), 1);
+        for (let chunk of blocks.values()) {
+          const index = chunk.indexOf(intersected);
+          if (index !== -1) {
+            chunk.splice(index, 1);
+            break;
+          }
+        }
       }
     }
 
@@ -261,6 +289,15 @@
         camera.position.y = 1;
         velocity.y = 0;
         canJump = true;
+      }
+
+      // Generate new chunks around the player
+      const chunkX = Math.floor(camera.position.x / chunkSize);
+      const chunkZ = Math.floor(camera.position.z / chunkSize);
+      for (let x = -1; x <= 1; x++) {
+        for (let z = -1; z <= 1; z++) {
+          createChunk(chunkX + x, chunkZ + z);
+        }
       }
     }
 
