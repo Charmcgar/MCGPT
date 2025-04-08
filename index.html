@@ -55,12 +55,7 @@
   </style>
 </head>
 <body>
-  <div id="instructions">
-    <p>Use arrow keys to look around (up/down for pitch, left/right for yaw).</p>
-    <p>WASD to move, Space to jump.</p>
-    <p>Left-click to dig, Right-click to place.</p>
-    <p>Press 1-2 to choose block type, E to place, Q to break.</p>
-  </div>
+
   <div id="crosshair"></div>
   <div id="hotbar">
     <div class="hotbar-slot" data-block-type="0">1</div>
@@ -70,7 +65,7 @@
   <script type="module">
     import { checkCollision } from './collisions.js';
 
-    // Create scene, camera, and renderer
+    // Create scene, camera and renderer
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer();
@@ -78,9 +73,9 @@
     document.body.appendChild(renderer.domElement);
 
     // Lighting
-    scene.add(new THREE.AmbientLight(0x888888)); // Ambient light
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1); // Directional light
-    directionalLight.position.set(10, 20, 10); // Position the light above and slightly in front of the scene
+    scene.add(new THREE.AmbientLight(0x888888));
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(10, 20, 10); 
     scene.add(directionalLight);
 
     // Load textures
@@ -101,13 +96,13 @@
             textures[index] = texture;
             texturesLoaded++;
             if (texturesLoaded === textureUrls.length) {
-              createInitialChunks(); // Once textures are loaded, create initial chunks
+              createInitialChunks(); // Once textures are loaded, create chunks
             }
           },
           undefined,
           (error) => {
             console.error(`Error loading texture: ${url}`, error);
-            textures[index] = new THREE.Texture(); // Empty texture as fallback
+            textures[index] = new THREE.Texture(); // Empty texture if it fails?
             texturesLoaded++;
             if (texturesLoaded === textureUrls.length) {
               createInitialChunks();
@@ -124,13 +119,13 @@
 
     function createChunk(chunkX, chunkZ) {
       const key = `${chunkX},${chunkZ}`;
-      if (blocks.has(key)) return; // Chunk already exists
+      if (blocks.has(key)) return; 
 
       const chunk = [];
       for (let x = 0; x < chunkSize; x++) {
         for (let y = 0; y < chunkSize; y++) {
           for (let z = 0; z < chunkSize; z++) {
-            const textureIndex = (x + y + z) % 2; // Alternate between grass and dirt textures
+            const textureIndex = (x + y + z) % 2; // grass and dirt textures
             const block = new THREE.Mesh(blockGeo, new THREE.MeshLambertMaterial({ map: textures[textureIndex] }));
             block.position.set(chunkX * chunkSize + x, y, chunkZ * chunkSize + z);
             block.userData.solid = true;
@@ -221,7 +216,7 @@
         }
       }
 
-      velocity.y += gravity; // Apply gravity
+      velocity.y += gravity; //gravity
 
       const nextPosition = camera.position.clone().add(velocity);
       const feetPosition = camera.position.clone().add(velocity).setY(camera.position.y - 0.5); // Check one block below
