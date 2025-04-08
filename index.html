@@ -67,7 +67,9 @@
     <div class="hotbar-slot" data-block-type="1">2</div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.min.js"></script>
-  <script>
+  <script type="module">
+    import { checkCollision } from './collisions.js';
+
     // Create scene, camera, and renderer
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -206,27 +208,6 @@
       keys[e.key.toLowerCase()] = false;
     });
 
-    // Enhanced collision detection function
-    function checkCollision(position, direction) {
-      // Check for collisions in the direction of movement
-      for (let chunk of blocks.values()) {
-        for (let block of chunk) {
-          if (block.userData.solid) {
-            const distance = position.distanceTo(block.position);
-            if (distance < 0.6) {
-              if (direction.y < 0 && position.y > block.position.y) { // Falling down
-                position.y = block.position.y + 0.6; // Stand on top of the block
-                canJump = true;
-                return true;
-              }
-              return true;
-            }
-          }
-        }
-      }
-      return false;
-    }
-
     // Update the movement logic
     function updateMovement() {
       if (keys['w']) velocity.z -= 0.1;
@@ -244,10 +225,14 @@
 
       const nextPosition = camera.position.clone().add(velocity);
       const feetPosition = camera.position.clone().add(velocity).setY(camera.position.y - 0.5); // Check one block below
-      if (!checkCollision(nextPosition, velocity) && !checkCollision(feetPosition, velocity)) {
+      const collision = checkCollision(nextPosition, velocity, blocks);
+      if (!collision.collided && !checkCollision(feetPosition, velocity, blocks).collided) {
         camera.position.copy(nextPosition);
       } else {
         velocity.y = 0; // Stop vertical movement on collision
+        if (collision.canJump) {
+          canJump = true;
+        }
       }
     }
 
@@ -311,7 +296,8 @@
       if (keys['d']) newPosition.addScaledVector(right, -moveSpeed);
 
       const feetPosition = newPosition.clone().setY(newPosition.y - 0.5); // Check one block below
-      if (!checkCollision(newPosition, velocity) && !checkCollision(feetPosition, velocity)) {
+      const collision = checkCollision(newPosition, velocity, blocks);
+      if (!collision.collided && !checkCollision(feetPosition, velocity, blocks).collided) {
         camera.position.copy(newPosition);
       }
 
