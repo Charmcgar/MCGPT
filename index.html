@@ -1,4 +1,4 @@
-eq<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -206,16 +206,48 @@ eq<!DOCTYPE html>
       keys[e.key.toLowerCase()] = false;
     });
 
-    // Collision detection function
-    function checkCollision(position) {
+    // Enhanced collision detection function
+    function checkCollision(position, direction) {
+      // Check for collisions in the direction of movement
       for (let chunk of blocks.values()) {
         for (let block of chunk) {
-          if (block.userData.solid && position.distanceTo(block.position) < 0.6) {
-            return true;
+          if (block.userData.solid) {
+            const distance = position.distanceTo(block.position);
+            if (distance < 0.6) {
+              if (direction.y < 0 && position.y > block.position.y) { // Falling down
+                position.y = block.position.y + 0.6; // Stand on top of the block
+                canJump = true;
+                return true;
+              }
+              return true;
+            }
           }
         }
       }
       return false;
+    }
+
+    // Update the movement logic
+    function updateMovement() {
+      if (keys['w']) velocity.z -= 0.1;
+      if (keys['s']) velocity.z += 0.1;
+      if (keys['a']) velocity.x -= 0.1;
+      if (keys['d']) velocity.x += 0.1;
+      if (keys[' ']) { // Space for jump
+        if (canJump) {
+          velocity.y = 0.2;
+          canJump = false;
+        }
+      }
+
+      velocity.y += gravity; // Apply gravity
+
+      const nextPosition = camera.position.clone().add(velocity);
+      if (!checkCollision(nextPosition, velocity)) {
+        camera.position.copy(nextPosition);
+      } else {
+        velocity.y = 0; // Stop vertical movement on collision
+      }
     }
 
     // Block placement function with grid snapping
@@ -306,12 +338,14 @@ eq<!DOCTYPE html>
       }
     }
 
-    // Animation loop
+    // Main animation loop
     function animate() {
       requestAnimationFrame(animate);
+      updateMovement();
       updatePlayer();
       renderer.render(scene, camera);
     }
+
     animate();
 
     // Adjust renderer on window resize
@@ -330,65 +364,6 @@ eq<!DOCTYPE html>
     });
 
     // Start loading textures
-
-    <script>
-  // Existing code ...
-
-  // Enhanced collision detection function
-  function checkCollision(position, direction) {
-    // Check for collisions in the direction of movement
-    for (let chunk of blocks.values()) {
-      for (let block of chunk) {
-        if (block.userData.solid) {
-          const distance = position.distanceTo(block.position);
-          if (distance < 0.6) {
-            if (direction.y < 0 && position.y > block.position.y) { // Falling down
-              position.y = block.position.y + 0.6; // Stand on top of the block
-              canJump = true;
-              return true;
-            }
-            return true;
-          }
-        }
-      }
-    }
-    return false;
-  }
-
-  // Update the movement logic
-  function updateMovement() {
-    if (keys['w']) velocity.z -= 0.1;
-    if (keys['s']) velocity.z += 0.1;
-    if (keys['a']) velocity.x -= 0.1;
-    if (keys['d']) velocity.x += 0.1;
-    if (keys[' ']) { // Space for jump
-      if (canJump) {
-        velocity.y = 0.2;
-        canJump = false;
-      }
-    }
-
-    velocity.y += gravity; // Apply gravity
-
-    const nextPosition = camera.position.clone().add(velocity);
-    if (!checkCollision(nextPosition, velocity)) {
-      camera.position.copy(nextPosition);
-    } else {
-      velocity.y = 0; // Stop vertical movement on collision
-    }
-  }
-
-  // Main animation loop
-  function animate() {
-    requestAnimationFrame(animate);
-
-    updateMovement();
-
-    renderer.render(scene, camera);
-  }
-
-  animate();
-</script>
     loadTextures();
   </script>
 </body>
