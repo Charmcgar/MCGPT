@@ -243,7 +243,8 @@
       velocity.y += gravity; // Apply gravity
 
       const nextPosition = camera.position.clone().add(velocity);
-      if (!checkCollision(nextPosition, velocity)) {
+      const feetPosition = camera.position.clone().add(velocity).setY(camera.position.y - 0.5); // Check one block below
+      if (!checkCollision(nextPosition, velocity) && !checkCollision(feetPosition, velocity)) {
         camera.position.copy(nextPosition);
       } else {
         velocity.y = 0; // Stop vertical movement on collision
@@ -309,9 +310,8 @@
       if (keys['a']) newPosition.addScaledVector(right, moveSpeed);
       if (keys['d']) newPosition.addScaledVector(right, -moveSpeed);
 
-      const feetPosition = newPosition.clone();
-      feetPosition.y -= 0.5; // Adjust for feet position
-      if (!checkCollision(newPosition) && !checkCollision(feetPosition)) {
+      const feetPosition = newPosition.clone().setY(newPosition.y - 0.5); // Check one block below
+      if (!checkCollision(newPosition, velocity) && !checkCollision(feetPosition, velocity)) {
         camera.position.copy(newPosition);
       }
 
